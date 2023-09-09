@@ -1,0 +1,19 @@
+{
+  "name": "back_hotel",
+  "version": "1.0.0",
+  "description": "back-end do hotel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Diogo, Rodrigo, Tiago",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.29.4",
+    "mongoose": "^7.5.0",
+    "router": "^1.3.8"
+  }
+}
