@@ -37,10 +37,10 @@ router.post("/login", async (req, res) => {
         const token = jwt.sign({ email: user.email }, SECRET)
         res.send({ token });
       } else {
-        return res.status(400).json({ message: 'Login failed' });
+        return res.status(400).json({ message: 'Não conseguio efetuar o login' });
       }
     } else {
-      return res.status(400).json({ message: 'Login failed' })
+      return res.status(400).json({ message: 'Não conseguio efetuar o login' })
     }
   } catch (error) {
     return res.status(400).json({ error });
@@ -54,7 +54,7 @@ router.get("/getutilizador", async (req, res) => {
 
   try {
     if (!authorization) {
-      res.status(400).json({ message: 'Required authorization token' })
+      res.status(400).json({ message: 'Token inválido' })
     } else {
       const decodedToken = jwt.decode(authorization, SECRET);
       if (decodedToken) {

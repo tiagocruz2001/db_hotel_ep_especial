@@ -12,13 +12,13 @@ const isLoggedIn = async (req, res, next) => {
                     req.user = payload;
                     next();
                 } else {
-                    res.status(400).json({ error: "Verificação do token falhou" });
+                    res.status(400).json({ error: "A verificação do token falhou" });
                 }
             } else {
                 res.status(400).json({ error: "malformed auth header" });
             }
         } else {
-            res.status(400).json({ error: "Não tem autorização pelo token fornecido" });
+            res.status(400).json({ error: "Token inválido ou sem premissão" });
         }
     } catch (error) {
         res.status(400).json({ error });
