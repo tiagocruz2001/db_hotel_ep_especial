@@ -32,6 +32,21 @@ router.get("/reservas", isLoggedIn, async (req, res) => {
   }
 });
 
+// Mostrar todas as Reservas de um utilizador
+router.get("/reservasutilizador", isLoggedIn, async (req, res) => {
+  const utilizador = req.body.utilizador;
+  try {
+    const reservas = await Reserva.find({ utilizador: utilizador }); // Mostra todas as Reservas de um utilizador
+    
+    if (reservas.length === 0) {
+      return res.status(200).json({ message: "Não existem reservas para este utilizador." });
+    }
+
+    res.send(reservas); // Retorna a lista de reservas como resposta
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
 
 
 // Remover Reserva
