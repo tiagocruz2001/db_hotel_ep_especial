@@ -6,6 +6,10 @@ const QuartoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hotel: {
+      type: String,
+      required: true,
+    },
     preco: {
       type: Number,
       required: true,

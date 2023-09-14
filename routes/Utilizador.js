@@ -2,83 +2,103 @@ const express = require("express");
 const router = express.Router();
 const Utilizador = require("../models/Utilizador");
 const bcrypt = require("bcrypt");
-const SECRET = "dsiaju32190msdkaj3012";
+const jwt = require('jsonwebtoken');
+const SECRET = "dsiaju32190msdkaj3012"; // Secret key para autenticação JWT
+const { isLoggedIn } = require('../middleware/authMiddleware');
 
-// registar utilizador
-
+// Registar Utilizador
 router.post("/registar", async (req, res) => {
   const novoutilizador = new Utilizador({
     username: req.body.username,
     email: req.body.email,
-    password: await bcrypt.hash(req.body.password, 10),
+    password: await bcrypt.hash(req.body.password, 10), // Hash da senha antes de armazená-la na base de dados
     pais: req.body.pais,
     cidade: req.body.cidade,
     contacto: req.body.contacto,
   });
 
   try {
-    await novoutilizador.save();
+    await novoutilizador.save(); // Salva o novo utilizador na base de dados
     res.send("Utilizador registado com sucesso");
   } catch (error) {
-    return res.status(400).json({ error });
+    return res.status(400).json({ error }); // Em caso de erro, retorna uma resposta de erro com o detalhe do erro
   }
 });
 
 // Login
-
 router.post("/login", async (req, res) => {
-  try {
-    const utilizador = await Utilizador.findOne({ email: req.body.email });
-    if (utilizador) {
-      const resultado = await bcrypt.compare(
-        req.body.password,
-        utilizador.password
-      );
-      if (resultado) {
-        const token = await jwt.sign({ email: utilizador.email }, SECRET);
-        res.json({ token });
+  const { email, password } = req.body;
+
+  try { 
+    const user = await Utilizador.findOne({ email: email });
+    if (user) {
+      const result = await bcrypt.compare(password, user.password);
+      if (result) {
+        const token = jwt.sign({ email: user.email }, SECRET)
+        res.send({ token });
       } else {
-        res.status(400).json({ error: "As credenciais estão incorretas" });
+        return res.status(400).json({ message: 'Login failed' });
       }
     } else {
-      res.status(400).json({ error: "O utilizador não existe" });
+      return res.status(400).json({ message: 'Login failed' })
     }
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-// mostrar todos os utilizadores
+// Mostrar o utilizador pela token
 
-router.get("/utilizadores", async (req, res) => {
+router.get("/getutilizador", async (req, res) => {
+  const authorization = req.headers.authorization;
+
   try {
-    const utilizadores = await Utilizador.find();
-    res.send(utilizadores);
+    if (!authorization) {
+      res.status(400).json({ message: 'Required authorization token' })
+    } else {
+      const decodedToken = jwt.decode(authorization, SECRET);
+      if (decodedToken) {
+        const user = await Utilizador.findOne({ email: decodedToken.email });
+        res.send(user);
+      } else {  
+        return res.status(400).json({ error });
+      }
+    }
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-// remover utilizador
 
-router.delete("/removerutilizador", async (req, res) => {
+
+// Mostrar todos os Utilizadores
+router.get("/utilizadores", isLoggedIn,async (req, res) => {
+  try {
+    const utilizadores = await Utilizador.find(); // Mostra todos os utilizadores no base de dados
+    res.send(utilizadores); // Retorna a lista de utilizadores como resposta
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
+
+// Remover Utilizador
+router.delete("/removerutilizador", isLoggedIn, async (req, res) => {
   const idutilizador = req.body.id;
   try {
-    await Utilizador.deleteOne({ _id: idutilizador });
+    await Utilizador.deleteOne({ _id: idutilizador }); // Remove um utilizador da base de dados com base no ID fornecido
     res.send("Utilizador removido com sucesso");
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-// editar utilizador
-
-router.put("/editarutilizador", async (req, res) => {
+// Editar Utilizador
+router.put("/editarutilizador", isLoggedIn, async (req, res) => {
   const idutilizador = req.body.id;
   const novoutilizador = {
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password,
+    password: req.body.password, // Atualiza os dados do utilizador na base de dados
     pais: req.body.pais,
     cidade: req.body.cidade,
     contacto: req.body.contacto,
@@ -91,9 +111,8 @@ router.put("/editarutilizador", async (req, res) => {
   }
 });
 
-// Ativar e desativar utilizador
-
-router.patch("/statusutilizador", async (req, res) => {
+// Ativar e Desativar Utilizador
+router.patch("/statusutilizador", isLoggedIn, async (req, res) => {
   const idutilizador = req.body.id;
   try {
     const utilizador = await Utilizador.findOne({ _id: idutilizador });
@@ -114,11 +133,8 @@ router.patch("/statusutilizador", async (req, res) => {
   }
 });
 
-
-// Ativar e desativar administrador
-
-
-router.patch("/administrador", async (req, res) => {
+// Ativar e Desativar Administrador
+router.patch("/administrador", isLoggedIn, async (req, res) => {
   const idutilizador = req.body.id;
   try {
     const utilizador = await Utilizador.findOne({ _id: idutilizador });
@@ -137,8 +153,4 @@ router.patch("/administrador", async (req, res) => {
   }
 });
 
-
-
-
-
-module.exports = router;
+module.exports = router; // Exporta o router contendo todas as rotas relacionadas a Utilizadores

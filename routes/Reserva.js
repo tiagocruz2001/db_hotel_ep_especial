@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const Reserva = require("../models/Reserva");
-
+const Reserva = require("../models/Reserva"); // Importa o modelo de dados para Reservas
+const { isLoggedIn } = require('../middleware/authMiddleware');
 
 // Adicionar Reserva
-
-router.post("/reserva", async (req, res) => {
+router.post("/reserva", isLoggedIn, async (req, res) => {
   const novareserva = new Reserva({
     utilizador: req.body.utilizador,
     quarto: req.body.quarto,
@@ -16,40 +15,38 @@ router.post("/reserva", async (req, res) => {
   });
 
   try {
-    await novareserva.save();
+    await novareserva.save(); // Salva a nova reserva no base de dados
     res.send("Reserva adicionada com sucesso");
   } catch (error) {
-    return res.status(400).json({ error });
+    return res.status(400).json({ error }); // Em caso de erro, retorna uma resposta de erro com o detalhe do erro
   }
 });
 
-
-// mostrar todas as Reservas
-
-router.get("/reservas", async (req, res) => {
+// Mostrar todas as Reservas
+router.get("/reservas", isLoggedIn, async (req, res) => {
   try {
-    const reservas = await Reserva.find();
-    res.send(reservas);
+    const reservas = await Reserva.find(); // Mostra todas as reservas na base de dados
+    res.send(reservas); // Retorna a lista de reservas como resposta
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-// remover Reserva
 
-router.delete("/removerreserva", async (req, res) => {
+
+// Remover Reserva
+router.delete("/removerreserva", isLoggedIn, async (req, res) => {
   const idreserva = req.body.id;
   try {
-    await Reserva.deleteOne({ _id: idreserva });
+    await Reserva.deleteOne({ _id: idreserva }); // Remove uma reserva da base de dados com base no ID fornecido
     res.send("Reserva removida com sucesso");
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-// editar Reserva
-
-router.patch("/editarreserva", async (req, res) => {
+// Editar Reserva
+router.patch("/editarreserva", isLoggedIn, async (req, res) => {
   const idreserva = req.body.id;
   const novareserva = {
     utilizador: req.body.utilizador,
@@ -60,12 +57,11 @@ router.patch("/editarreserva", async (req, res) => {
     precototal: req.body.precototal,
   };
   try {
-    await Reserva.updateOne({ _id: idreserva }, novareserva);
+    await Reserva.updateOne({ _id: idreserva }, novareserva); // Atualiza uma reserva com base no ID fornecido
     res.send("Reserva editada com sucesso");
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
 
-
-module.exports = router;
+module.exports = router; // Exporta o router contendo todas as rotas relacionadas a Reservas
